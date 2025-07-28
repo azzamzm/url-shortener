@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="auth-form-container">
+    <div class="auth-tabs">
+        <button class="tab-button active" onclick="showForm('login')">Login</button>
+        <button class="tab-button" onclick="showForm('register')">Register</button>
+    </div>
+
+    <div id="login-form" class="auth-form-section active">
+        <h2>Login</h2>
+        <form method="POST" action="{{ url_for('login') }}">
+            <div class="form-group">
+                <label for="username_login">Username:</label>
+                <input type="text" id="username_login" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password_login">Password:</label>
+                <input type="password" id="password_login" name="password" required>
+            </div>
+            <button type="submit" class="btn-primary">Login</button>
+        </form>
+        <p style="margin-top: 15px;">Belum punya akun? <a href="#" onclick="showForm('register'); return false;">Daftar di sini</a></p>
+    </div>
+
+    <div id="register-form" class="auth-form-section" style="display:none;">
+        <h2>Register</h2>
+        <form method="POST" action="{{ url_for('register') }}">
+            <div class="form-group">
+                <label for="username_reg">Username:</label>
+                <input type="text" id="username_reg" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="email_reg">Email:</label>
+                <input type="email" id="email_reg" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password_reg">Password:</label>
+                <input type="password" id="password_reg" name="password" required>
+            </div>
+            <div class="form-group">
+                <label for="confirm_password_reg">Confirm Password:</label>
+                <input type="password" id="confirm_password_reg" name="confirm_password" required>
+            </div>
+            <button type="submit" class="btn-primary">Register</button>
+        </form>
+        <p style="margin-top: 15px;">Sudah punya akun? <a href="#" onclick="showForm('login'); return false;">Login di sini</a></p>
+    </div>
+</div>
+
+<style>
+    .auth-tabs {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+    .auth-tabs .tab-button {
+        padding: 10px 20px;
+        border: 1px solid var(--border-color);
+        border-bottom: none;
+        background-color: #f2f2f2;
+        cursor: pointer;
+        font-size: 1.1rem;
+        transition: background-color 0.3s ease;
+        border-radius: 5px 5px 0 0;
+        margin: 0 2px;
+    }
+    .auth-tabs .tab-button.active {
+        background-color: var(--card-bg);
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        font-weight: bold;
+    }
+    .auth-form-section {
+        padding: 20px;
+        border: 1px solid var(--border-color);
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+        background-color: var(--card-bg);
+    }
+</style>
+
+<script>
+    function showForm(formId) {
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const loginButton = document.querySelector('.tab-button:nth-child(1)');
+        const registerButton = document.querySelector('.tab-button:nth-child(2)');
+
+        if (formId === 'login') {
+            loginForm.style.display = 'block';
+            registerForm.style.display = 'none';
+            loginButton.classList.add('active');
+            registerButton.classList.remove('active');
+        } else {
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'block';
+            loginButton.classList.remove('active');
+            registerButton.classList.add('active');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        showForm('login');
+    });
+</script>
+{% endblock %}

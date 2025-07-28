@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<section class="dashboard-section">
+    <div class="dashboard-header">
+        <h2>Halo, {{ g.user.username }}!</h2>
+        <button class="btn-primary" id="openShortenModal">Buat Tautan Baru</button>
+    </div>
+
+    <div id="urlsList" class="urls-list">
+        <p>Memuat tautan Anda...</p>
+    </div>
+
+    <div id="shortenModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeShortenModal">&times;</span>
+            <h3>Pendekkan URL Baru</h3>
+            <form id="modalShortenForm" class="shorten-form">
+                <input type="url" id="modalOriginalUrl" placeholder="Masukkan URL panjang di sini..." required>
+                <input type="text" id="modalCustomAlias" placeholder="Alias kustom (opsional)">
+                <button type="submit">Short!</button>
+            </form>
+            <div id="modalResult" class="shorten-result" style="display: none;">
+                <p>URL Pendek Anda: <a id="modalShortUrlOutput" href="#" target="_blank"></a></p>
+                <img id="modalQrCodeOutput" src="" alt="QR Code" style="display: none; max-width: 150px; margin-top: 10px;">
+                <button id="modalCopyButton" class="copy-btn">Salin URL</button>
+            </div>
+            <p class="error-message" id="modalErrorMessage" style="display: none;"></p> {# <--- Tambahkan kembali ini #}
+        </div>
+    </div>
+
+    <div id="analyticsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeAnalyticsModal">&times;</span>
+            <h3>Analitik Tautan: <span id="analyticsShortCode"></span></h3>
+            <p>Total Klik: <span id="totalClicks"></span></p>
+            <h4>Distribusi Negara:</h4>
+            <ul id="countryDistribution"></ul>
+            <h4>Klik Per Hari:</h4>
+            <ul id="dailyClicks"></ul>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Menerima token dari backend setelah login dan menyimpannya di localStorage
+    // Ini akan digunakan oleh JavaScript untuk permintaan API yang memerlukan autentikasi
+    const token = "{{ token if token else '' }}";
+    if (token) {
+        localStorage.setItem('jwt_token', token);
+        // Hapus token dari URL (jika ada) untuk keamanan
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+</script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script> {# <--- BARIS INI WAJIB DITAMBAHKAN KEMBALI #}
+{% endblock %}

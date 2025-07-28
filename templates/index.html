@@ -1,0 +1,22 @@
+{% extends "base.html" %} {# Mewarisi dari base.html #}
+
+{% block title %}Beranda{% endblock %} {# Mengganti judul halaman #}
+
+{% block content %} {# Mengisi blok konten dari base.html #}
+<section class="hero-section">
+    <div class="hero-content">
+        <h1>Pendekkan URL Panjangmu</h1>
+        <p>Mudah, cepat, dan efektif. Dapatkan tautan yang mudah dibagikan dan lacak performanya.</p>
+        <form id="shortenForm" class="shorten-form">
+            <input type="url" id="originalUrl" placeholder="Masukkan URL panjang di sini..." required>
+            <input type="text" id="customAlias" placeholder="Alias kustom (opsional)">
+            <button type="submit">Pendekkan!</button>
+        </form>
+        <div id="result" class="shorten-result" style="display: none;">
+            <p>URL Pendek Anda: <a id="shortUrlOutput" href="#" target="_blank"></a></p>
+            <img id="qrCodeOutput" src="" alt="QR Code" style="display: none; max-width: 150px; margin-top: 10px;">
+            <button id="copyButton" class="copy-btn">Salin URL</button>
+        </div>
+    </div>
+</section>
+{% endblock %}

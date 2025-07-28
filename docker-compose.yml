@@ -1,0 +1,41 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: url_shortener_db
+      POSTGRES_USER: url_shortener_user
+      POSTGRES_PASSWORD: urlshortenerunissula # GANTI INI!
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    # Port ini tidak wajib jika Flask juga di Docker,
+    # tapi bagus untuk debugging dengan pgAdmin.
+    ports:
+      - "5432:5432"
+
+  # --- Tambahkan bagian ini untuk aplikasi Flask Anda ---
+  web: # Ini adalah nama layanan untuk aplikasi Flask Anda
+    build: . # Beri tahu Docker untuk membangun image dari Dockerfile di direktori saat ini
+    ports:
+      - "5000:5000" # Memetakan port 5000 dari container ke port 5000 di host Anda
+    volumes:
+      - .:/app # Memasang volume: folder proyek saat ini ke folder /app di dalam container
+               # Ini memungkinkan perubahan kode langsung terlihat tanpa rebuild image
+    environment:
+      # Pastikan variabel ini diatur, meskipun sudah ada di .env
+      # Jika Anda ingin mereka dibaca dari .env di dalam container,
+      # Anda bisa menggunakan 'env_file: .env' di bawah, tapi ini lebih eksplisit.
+      DATABASE_URL: postgresql://url_shortener_user:your_secure_password@db:5432/url_shortener_db # Host-nya 'db' karena di jaringan Docker yang sama
+      SECRET_KEY: f79de8e5a1f702a5352efedc856acf5285961c34bd0d1a65c92419260a9254ae0e335bf46aa706e6ae5bc546e290505b47863d3d66af9c94d9e1a7cedd578ae4 # GANTI INI!
+      BASE_URL: http://localhost:5000 # Untuk akses dari browser Anda
+      QR_CODE_DIR: static/qrcodes # Path di dalam container
+    depends_on:
+      - db # Pastikan layanan 'db' dimulai sebelum layanan 'web'
+    command: flask run --host=0.0.0.0 # Perintah untuk menjalankan aplikasi Flask di dalam container
+                                    # --host=0.0.0.0 penting agar Flask bisa diakses dari luar container
+# --- Akhir penambahan ---
+
+volumes:
+  db_data:

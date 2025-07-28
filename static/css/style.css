@@ -1,0 +1,734 @@
+/* static/css/style.css */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+/* --- Variabel CSS --- */
+:root {
+    --primary-color: #007bff; /* Biru Primer */
+    --secondary-color: #6c757d; /* Abu-abu Sekunder */
+    --accent-color: #28a745;  /* Hijau Aksen */
+    --text-color: #333;       /* Warna Teks Umum */
+    --bg-color: #f8f9fa;      /* Background Halaman */
+    --card-bg: #fff;          /* Background Kartu/Form */
+    --border-color: #ddd;     /* Warna Border */
+    --shadow-color: rgba(0, 0, 0, 0.1); /* Warna Bayangan */
+    --error-color: #dc3545;   /* Warna Error (Merah) */
+    --success-color: #28a745; /* Warna Sukses (Hijau) */
+}
+
+/* --- Reset CSS Dasar & Styling Global --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    line-height: 1.6;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Memastikan body mengisi seluruh tinggi viewport */
+}
+
+/* --- Global Elements --- */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    flex-grow: 1; /* Memastikan kontainer mengisi ruang yang tersedia */
+}
+
+h1, h2, h3 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+}
+
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* --- Buttons --- */
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.btn-danger {
+    background-color: var(--error-color);
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+    margin-left: 10px;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+/* --- Messages --- */
+.info-message {
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center; /* Ini akan memusatkan teks di dalamnya */
+    font-weight: 500;
+    color: #004085; /* Warna teks biru gelap */
+    background-color: #cce5ff; /* Latar belakang biru muda */
+    border: 1px solid #b8daff; /* Border biru */
+}
+
+/* Jika Anda menambahkan flashes-container, tambahkan gaya untuk itu juga */
+.flashes-container {
+    max-width: 600px; /* Batasi lebar maksimal */
+    margin: 20px auto; /* Memberi margin atas/bawah dan memusatkan secara horizontal */
+    padding: 0 20px; /* Padding samping agar tidak terlalu mepet ke tepi */
+}
+.error-message, .success-message {
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.error-message {
+    color: var(--error-color);
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+}
+
+.success-message {
+    color: var(--success-color);
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+}
+
+/* --- Navbar (Header) --- */
+.navbar {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px var(--shadow-color);
+    flex-wrap: wrap; /* Mengizinkan wrapping pada layar kecil */
+}
+
+/* Kustomisasi Logo dan Teks di Navbar (Untuk 1 Logo) */
+.navbar .logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column; /* Tumpuk elemen secara vertikal (title, logo, university-name) */
+    text-align: center;
+}
+
+.app-brand {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column; /* Tumpuk judul, logo, dan nama universitas secara vertikal */
+    align-items: center; /* Pusatkan item secara horizontal */
+}
+
+.app-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 5px; /* Jarak antara judul dan logo */
+    line-height: 1;
+}
+
+.logo-container {
+    display: flex; /* Tetap flex untuk penempatan vertikal yang lebih baik */
+    justify-content: center; /* Pusatkan logo */
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.app-logo {
+    height: 45px; /* Sesuaikan tinggi logo Anda */
+    width: auto;
+    max-width: 100%;
+    flex-shrink: 0;
+    vertical-align: middle;
+}
+
+.university-name {
+    font-size: 0.9rem;
+    font-weight: 300;
+    opacity: 0.9;
+    margin-top: 2px;
+}
+
+.nav-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 20px;
+}
+
+.nav-links a, .nav-links span {
+    color: white;
+    font-weight: 400;
+    transition: opacity 0.3s ease;
+}
+
+.nav-links a:hover {
+    opacity: 0.8;
+    text-decoration: none;
+}
+
+/* --- Hero Section (Homepage) --- */
+.hero-section {
+    background: linear-gradient(to right, var(--primary-color), #0056b3);
+    color: white;
+    text-align: center;
+    padding: 80px 20px;
+    border-bottom-left-radius: 50% 20px;
+    border-bottom-right-radius: 50% 20px;
+    margin-bottom: 40px;
+}
+
+.hero-content h1 {
+    color: white;
+    font-size: 3rem;
+    margin-bottom: 15px;
+}
+
+.hero-content p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+}
+
+.shorten-form {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.shorten-form input[type="url"],
+.shorten-form input[type="text"] {
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    font-size: 1rem;
+    flex: 1 1 300px;
+    min-width: 200px;
+}
+
+.shorten-form button {
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.shorten-form button:hover {
+    background-color: #218838;
+}
+
+.shorten-result {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 30px;
+    box-shadow: 0 2px 4px var(--shadow-color);
+    text-align: center;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.shorten-result p {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+}
+
+.shorten-result a {
+    font-weight: 700;
+    word-break: break-all;
+}
+
+.copy-btn {
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.copy-btn:hover {
+    background-color: #5a6268;
+}
+
+/* --- Auth Forms (Login/Register) --- */
+.auth-form-container {
+    max-width: 400px;
+    margin: 40px auto;
+    background-color: var(--card-bg);
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px var(--shadow-color);
+    text-align: center;
+}
+
+.auth-form-container h2 {
+    margin-bottom: 25px;
+    color: var(--primary-color);
+}
+
+/* Style untuk form itu sendiri, jika Anda membungkus form dengan class .auth-form */
+/* Jika tidak, aturan ini akan berlaku untuk input/label di dalam .auth-form-section */
+.auth-form {
+    /* Opsional: Tambahkan styling jika form memiliki class .auth-form */
+}
+
+.form-group { /* Class untuk setiap baris label + input */
+    margin-bottom: 18px; /* Sedikit lebih kecil dari 20px untuk kerapatan */
+    text-align: left;
+}
+
+.form-group:last-of-type {
+    margin-bottom: 25px; /* Jarak yang lebih besar sebelum tombol submit */
+}
+
+
+label {
+    display: block; /* Memastikan label di baris sendiri */
+    margin-bottom: 8px; /* Jarak antara label dan input */
+    font-weight: 500;
+    color: var(--text-color);
+    font-size: 0.95rem; /* Ukuran font label sedikit lebih kecil */
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%; /* Memastikan input mengisi lebar container */
+    padding: 12px 15px; /* Tambah padding sedikit untuk kenyamanan */
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.075); /* Bayangan input */
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Efek fokus */
+}
+
+.auth-form-section button[type="submit"] { /* Targetkan tombol submit di dalam section form */
+    width: 100%;
+    padding: 12px;
+    font-size: 1.1rem;
+    margin-top: 10px; /* Jarak di atas tombol submit */
+}
+
+/* --- New: Styling for Auth Tabs --- */
+.auth-tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: -1px; /* Untuk menempel ke border form-section */
+    border-bottom: 1px solid var(--border-color); /* Garis bawah untuk tab */
+}
+
+.auth-tabs .tab-button {
+    padding: 10px 20px;
+    border: 1px solid var(--border-color);
+    background-color: #f2f2f2;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+    border-radius: 5px 5px 0 0;
+    margin: 0 2px;
+    z-index: 1; /* Pastikan tab aktif di atas garis */
+}
+
+.auth-tabs .tab-button:first-child {
+    margin-left: 0;
+}
+
+.auth-tabs .tab-button:last-child {
+    margin-right: 0;
+}
+
+.auth-tabs .tab-button.active {
+    background-color: var(--card-bg);
+    border-bottom-color: var(--card-bg); /* Sembunyikan border bawah tab aktif */
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.auth-form-section { /* ini adalah div yang membungkus setiap form (login/register) */
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0 0 8px 8px; /* Border bawah saja */
+    padding: 30px; /* Padding yang cukup di dalam form section */
+    box-shadow: 0 2px 4px var(--shadow-color);
+    text-align: center; /* Untuk menengahkan elemen di dalamnya jika diperlukan */
+}
+
+/* --- Dashboard --- */
+.dashboard-section {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px var(--shadow-color);
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.dashboard-header h2 {
+    margin: 0;
+}
+
+.urls-list {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.url-card {
+    background-color: var(--card-bg);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 10px;
+    border: 1px solid var(--border-color);
+    position: relative;
+}
+
+.url-card h3 {
+    margin-top: 0;
+    font-size: 1.3rem;
+    word-break: break-all;
+}
+
+.url-card p {
+    margin: 5px 0;
+    font-size: 0.95rem;
+}
+
+.url-card a {
+    font-weight: 500;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-all;
+}
+
+.url-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
+
+.url-actions button {
+    font-size: 0.85rem;
+    padding: 8px 12px;
+}
+
+.url-status {
+    font-size: 0.8rem;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.url-item .original-url {
+    white-space: nowrap;       /* Mencegah teks pindah baris */
+    overflow: hidden;          /* Menyembunyikan teks yang melebihi batas */
+    text-overflow: ellipsis;   /* Menampilkan "..." untuk teks yang terpotong */
+    max-width: 100%;           /* Pastikan tidak melebihi lebar kontainer */
+    display: block;            /* Penting agar overflow dan text-overflow bekerja */
+    margin-bottom: 5px;
+}
+
+/* Jika Anda ingin teks wrapping tanpa elipsis, gunakan ini sebagai gantinya: */
+/*
+.url-item .original-url {
+    word-wrap: break-word;     /* Memastikan kata-kata panjang pecah baris */
+    /* overflow-wrap: break-word; /* Alternatif untuk kompatibilitas lebih baik */
+    /* margin-bottom: 5px; */
+/* } */
+/* --- Modals (Pop-ups) --- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: var(--card-bg);
+    margin: auto;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px var(--shadow-color);
+    width: 80%;
+    max-width: 600px;
+    position: relative;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.close-button {
+    color: var(--secondary-color);
+    font-size: 28px;
+    font-weight: bold;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    cursor: pointer;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: var(--text-color);
+    text-decoration: none;
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Styling for the analytics modal */
+#analyticsModal ul {
+    list-style: none;
+    padding: 0;
+}
+
+#analyticsModal ul li {
+    background-color: #f2f2f2;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#analyticsModal ul li strong {
+    color: var(--primary-color);
+}
+
+/* --- QR Code Display --- */
+.qr-code-img {
+    display: block;
+    max-width: 150px;
+    height: auto;
+    margin: 15px auto 0;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+}
+
+
+/* --- Footer --- */
+footer {
+    background-color: var(--primary-color);
+    color: white;
+    text-align: center;
+    padding: 15px;
+    margin-top: auto;
+    box-shadow: 0 -2px 4px var(--shadow-color);
+}
+
+
+/* --- Responsive Design --- */
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px 15px;
+    }
+
+    .navbar .logo,
+    .app-brand {
+        width: 100%;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .app-title {
+        font-size: 1.6rem;
+    }
+
+    .logo-container {
+        /* gap tidak lagi diperlukan untuk satu logo, tapi biarkan saja */
+    }
+
+    .app-logo {
+        height: 35px;
+    }
+
+    .university-name {
+        font-size: 0.8rem;
+    }
+
+    .nav-links {
+        flex-direction: column;
+        width: 100%;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .nav-links li {
+        width: 100%;
+    }
+
+    .nav-links li a, .nav-links li span {
+        display: block;
+        text-align: center;
+        padding: 8px 0;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 5px;
+    }
+
+    .hero-content h1 {
+        font-size: 2.2rem;
+    }
+
+    .hero-content p {
+        font-size: 1rem;
+    }
+
+    .shorten-form input,
+    .shorten-form button {
+        width: 100%;
+        flex: none;
+    }
+
+    .auth-form-container,
+    .dashboard-section {
+        margin: 20px;
+        padding: 20px;
+    }
+
+    .urls-list {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-content {
+        width: 95%;
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-section {
+        padding: 50px 15px;
+    }
+
+    .hero-content h1 {
+        font-size: 1.8rem;
+    }
+
+    .shorten-result {
+        padding: 15px;
+    }
+
+    .auth-form input {
+        font-size: 0.9rem;
+    }
+
+    .btn-primary, .btn-secondary, .btn-danger {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+    }
+
+    .app-title {
+        font-size: 1.4rem;
+    }
+    .app-logo {
+        height: 30px;
+    }
+    .logo-container {
+        /* gap tidak lagi diperlukan untuk satu logo */
+    }
+    .university-name {
+        font-size: 0.75rem;
+    }
+}
