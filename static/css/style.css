@@ -102,42 +102,122 @@ a:hover {
     background-color: #c82333;
 }
 
-/* --- Messages --- */
-.info-message {
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 20px;
-    text-align: center; /* Ini akan memusatkan teks di dalamnya */
-    font-weight: 500;
-    color: #004085; /* Warna teks biru gelap */
-    background-color: #cce5ff; /* Latar belakang biru muda */
-    border: 1px solid #b8daff; /* Border biru */
+.flash-messages-container {
+    position: relative; /* Bisa relatif atau absolut, tergantung layout Anda */
+    width: 90%; /* Atau lebar yang Anda inginkan */
+    max-width: 800px; /* Batasi lebar */
+    margin: 20px auto; /* Pusatkan dan beri jarak dari atas */
+    padding: 0; /* Pastikan tidak ada padding ekstra */
+    z-index: 1000; /* Pastikan di atas konten utama */
 }
 
-/* Jika Anda menambahkan flashes-container, tambahkan gaya untuk itu juga */
-.flashes-container {
-    max-width: 600px; /* Batasi lebar maksimal */
-    margin: 20px auto; /* Memberi margin atas/bawah dan memusatkan secara horizontal */
-    padding: 0 20px; /* Padding samping agar tidak terlalu mepet ke tepi */
-}
-.error-message, .success-message {
-    padding: 10px;
+.flash-message {
+    padding: 15px 20px;
+    margin-bottom: 10px;
     border-radius: 5px;
-    margin-bottom: 20px;
-    text-align: center;
-    font-weight: 500;
+    font-weight: bold;
+    display: flex; /* Menggunakan flexbox untuk layout */
+    justify-content: space-between; /* Untuk meletakkan tombol tutup di kanan */
+    align-items: center; /* Pusatkan secara vertikal */
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out, height 0.5s ease-in-out, margin 0.5s ease-in-out;
+    overflow: hidden; /* Penting untuk animasi height */
 }
 
-.error-message {
-    color: var(--error-color);
+.flash-message.hide {
+    opacity: 0;
+    height: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.flash-message-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.flash-message-error {
     background-color: #f8d7da;
+    color: #721c24;
     border: 1px solid #f5c6cb;
 }
 
-.success-message {
-    color: var(--success-color);
-    background-color: #d4edda;
-    border: 1px solid #c3e6cb;
+.flash-message-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+.flash-message-warning { /* Jika Anda menggunakan kategori 'warning' */
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+.close-flash-message {
+    cursor: pointer;
+    font-size: 1.2em;
+    font-weight: bold;
+    line-height: 1;
+    margin-left: 15px;
+    color: inherit; /* Menggunakan warna teks induk */
+}
+
+.close-flash-message:hover {
+    color: #000; /* Sedikit lebih gelap saat hover */
+}
+
+/* --- (Pastikan CSS untuk notifikasi AJAX dinamis Anda masih ada di bawah ini atau di atas) --- */
+.ajax-notifications-container {
+    position: fixed; /* Penting: agar posisinya relatif terhadap viewport */
+    top: 40px;       /* Jarak dari tepi atas tampilan web */
+    left: 50%;       /* Mulai di tengah horizontal */
+    transform: translateX(-50%); /* Geser ke kiri setengah lebar elemen untuk benar-benar di tengah */
+    z-index: 2000;   /* Pastikan di atas elemen lain */
+    display: flex;
+    flex-direction: column; /* Untuk menumpuk notifikasi baru di bawah yang sudah ada */
+    align-items: center; /* Memusatkan notifikasi individual di dalam kontainer */
+    gap: 10px;       /* Jarak antar notifikasi jika ada banyak */
+    pointer-events: none; /* Memungkinkan interaksi mouse melewati wadah, kecuali notifikasi itu sendiri */
+    max-width: 90%;  /* Batasi lebar agar tidak terlalu lebar di layar besar */
+}
+
+.ajax-notification {
+    /* ... (Gaya ajax-notification yang sudah ada, tidak perlu diubah, kecuali text-align) ... */
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out, transform 0.3s ease-out;
+    transform: translateX(0);
+    pointer-events: auto;
+    min-width: 250px;
+    max-width: 350px;
+    text-align: center; /* Pastikan teks di tengah */
+}
+
+.ajax-notification.hide {
+    opacity: 0;
+    transform: translateX(20px);
+}
+
+.ajax-notification-success {
+    background-color: #28a745;
+    border: 1px solid #218838;
+}
+
+.ajax-notification-error {
+    background-color: #dc3545;
+    border: 1px solid #c82333;
+}
+
+.ajax-notification-info {
+    background-color: #17a2b8;
+    border: 1px solid #138496;
 }
 
 /* --- Navbar (Header) --- */
