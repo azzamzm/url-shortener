@@ -408,4 +408,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.location.pathname === '/dashboard') {
         loadUserUrls();
     }
+<<<<<<< HEAD:api/static/js/script.js
 });
+=======
+});
+>>>>>>> e28c198779903d0ca537b91e9cfadba61492cef3:static/js/script.js

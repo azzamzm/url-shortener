@@ -394,4 +394,6 @@ def get_url_analytics_api(url_id):
 
 # --- Menjalankan Aplikasi ---
 if __name__ == '__main__':
+    HEAD:api/app.py
     app.run(debug=True, port=5000) # Pastikan Anda selalu menggunakan debug=True selama pengembangan
+e28c198779903d0ca537b91e9cfadba61492cef3:app.py
