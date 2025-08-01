@@ -1,7 +1,5 @@
-# app.py
 from flask import Flask, request, redirect, jsonify, render_template, session, url_for, g, flash
-from models import db, User, ShortUrl, Click
-from config import Config
+from models import db, User, ShortUrl, Click # Asumsi models.py sudah ada dan benar
 import string
 import random
 import qrcode
@@ -10,28 +8,34 @@ import jwt
 from datetime import datetime, timedelta, timezone
 import requests
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy.exc import IntegrityError # Import IntegrityError untuk penanganan error database
+from sqlalchemy.exc import IntegrityError
 
 import logging
+import io # Import untuk menangani gambar dalam memori
+import base64 # Import untuk encoding Base64
+
 logging.basicConfig(level=logging.INFO)
 
 # --- Inisialisasi Aplikasi Flask ---
 app = Flask(__name__)
-app.config.from_object(Config)
+
+# Mengambil konfigurasi sensitif dari variabel lingkungan
+# Gunakan nilai default untuk pengembangan lokal jika variabel lingkungan tidak diatur
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'kunci_rahasia_default_untuk_pengembangan')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI', 'sqlite:///site.db')
+
+# Inisialisasi database
 db.init_app(app)
 
-# Pastikan direktori QR Codes ada dan dapat ditulisi
-# Ini adalah tempat yang baik untuk mendefinisikan path ini
-QR_CODES_FOLDER = os.path.join(app.root_path, 'static', 'qrcodes')
-os.makedirs(QR_CODES_FOLDER, exist_ok=True) # Pastikan folder dibuat saat aplikasi dimulai
-
-app.logger.setLevel(logging.INFO) # Pastikan baris ini ada setelah 'app = Flask(__name__)'
+app.logger.setLevel(logging.INFO)
 
 # --- PENTING: Membuat Tabel Database (Pastikan ini ada!) ---
+# Untuk aplikasi produksi, disarankan menggunakan Flask-Migrate untuk manajemen skema database.
+# Namun, untuk memulai, db.create_all() akan berfungsi.
 with app.app_context():
     db.create_all()
 
-# --- Context Processor (Pastikan ini ada!) ---
+# --- Context Processor ---
 @app.context_processor
 def inject_user_and_username():
     username = None
@@ -39,7 +43,7 @@ def inject_user_and_username():
         username = g.user.username
     return dict(username=username)
 
-# --- Before Request untuk Memuat Pengguna (Pastikan ini ada!) ---
+# --- Before Request untuk Memuat Pengguna ---
 @app.before_request
 def load_logged_in_user():
     token = session.get('token')
@@ -47,13 +51,12 @@ def load_logged_in_user():
     if token:
         try:
             payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
-            # Menggunakan Session.get() untuk SQLAlchemy 2.0
-            g.user = db.session.get(User, payload['user_id']) # Perbaikan: Gunakan db.session.get()
+            g.user = db.session.get(User, payload['user_id'])
         except jwt.ExpiredSignatureError:
-            session.pop('token', None) # Token expired, hapus dari sesi
+            session.pop('token', None)
             flash('Sesi Anda telah berakhir, silakan masuk kembali.', 'info')
         except jwt.InvalidTokenError:
-            session.pop('token', None) # Token tidak valid
+            session.pop('token', None)
             flash('Token tidak valid, silakan masuk kembali.', 'error')
 
 # --- Fungsi Pembantu (Helper Functions) ---
@@ -68,9 +71,9 @@ def login_required(view):
     def wrapped_view(*args, **kwargs):
         if g.user is None:
             flash('Anda harus masuk untuk mengakses halaman ini.', 'warning')
-            return redirect(url_for('auth')) # Redirect ke halaman auth
+            return redirect(url_for('auth'))
         return view(*args, **kwargs)
-    wrapped_view.__name__ = view.__name__ # Penting untuk Flask
+    wrapped_view.__name__ = view.__name__
     return wrapped_view
 
 # --- Rute Aplikasi ---
@@ -81,67 +84,58 @@ def index():
 
 # --- Rute Autentikasi ---
 
-# Ini adalah rute utama untuk menampilkan formulir login/register
-# Ini yang harus memiliki endpoint 'auth'
 @app.route('/auth', methods=['GET'], endpoint='auth')
 def show_auth_form():
     if g.user:
-        # Jika pengguna sudah login, arahkan ke dashboard
         return redirect(url_for('dashboard'))
-    # Jika belum login, tampilkan halaman autentikasi
     return render_template('auth.html')
 
-# Rute untuk proses register
 @app.route('/register', methods=['POST'])
 def register():
     if g.user:
         return redirect(url_for('dashboard'))
 
     username = request.form.get('username')
-    email = request.form.get('email') # Ambil email dari form
+    email = request.form.get('email')
     password = request.form.get('password')
-    confirm_password = request.form.get('confirm_password') # Asumsikan Anda memiliki ini di form
+    confirm_password = request.form.get('confirm_password')
 
-    # --- Validasi Input ---
-    if not username or not password or not email or not confirm_password: # Tambahkan 'email' dan 'confirm_password'
-        flash('Semua kolom harus diisi.', 'error') # Pesan lebih umum
-        return redirect(url_for('auth')) # Redirect kembali ke halaman auth
+    if not username or not password or not email or not confirm_password:
+        flash('Semua kolom harus diisi.', 'error')
+        return redirect(url_for('auth'))
 
-    if password != confirm_password: # Validasi konfirmasi password
+    if password != confirm_password:
         flash('Konfirmasi kata sandi tidak cocok.', 'error')
         return redirect(url_for('auth'))
 
-    # --- Cek Pengguna/Email yang Sudah Ada ---
     existing_user = User.query.filter_by(username=username).first()
     if existing_user:
         flash('Nama pengguna sudah terdaftar. Silakan pilih nama lain.', 'error')
         return redirect(url_for('auth'))
 
-    existing_email = User.query.filter_by(email=email).first() # Cek apakah email sudah terdaftar
+    existing_email = User.query.filter_by(email=email).first()
     if existing_email:
         flash('Email ini sudah terdaftar. Silakan gunakan email lain atau masuk.', 'error')
         return redirect(url_for('auth'))
 
-    # --- Buat Pengguna Baru ---
     hashed_password = generate_password_hash(password)
     new_user = User(
         username=username,
-        email=email, # Berikan nilai email ke model User
+        email=email,
         password_hash=hashed_password
     )
     db.session.add(new_user)
     
     try:
-        db.session.commit() # Coba commit perubahan
+        db.session.commit()
         flash('Registrasi berhasil! Silakan masuk.', 'success')
         return redirect(url_for('auth'))
     except Exception as e:
-        db.session.rollback() # Jika ada error database (misal: constraint violation lainnya), batalkan transaksi
-        flash(f'Terjadi kesalahan saat registrasi: {e}', 'error') # Tampilkan pesan error
-        app.logger.error(f"Error during registration: {e}") # Log error untuk debugging lebih lanjut
+        db.session.rollback()
+        flash(f'Terjadi kesalahan saat registrasi: {e}', 'error')
+        app.logger.error(f"Error during registration: {e}")
         return redirect(url_for('auth'))
 
-# Rute untuk proses login
 @app.route('/login', methods=['POST'])
 def login():
     if g.user:
@@ -158,7 +152,7 @@ def login():
 
     if user and check_password_hash(user.password_hash, password):
         token = jwt.encode({'user_id': user.id, 'exp': datetime.now(timezone.utc) + timedelta(hours=24)},
-                            app.config['SECRET_KEY'], algorithm='HS256')
+                             app.config['SECRET_KEY'], algorithm='HS256')
         session['token'] = token
         flash('Berhasil masuk!', 'success')
         return redirect(url_for('dashboard'))
@@ -166,7 +160,6 @@ def login():
         flash('Kredensial tidak valid. Silakan coba lagi.', 'error')
         return redirect(url_for('auth'))
 
-# Rute untuk logout
 @app.route('/logout')
 def logout():
     session.pop('token', None)
@@ -207,16 +200,11 @@ def shorten_url_api():
 
     if existing_short_url:
         short_code = existing_short_url.short_code
-        # PERBAIKAN: Pastikan QR code URL menggunakan forward slashes saat diambil dari DB
-        qr_code_url_from_db = None
-        if existing_short_url.qr_code_path:
-            # Mengganti backslash dengan forward slash jika ada
-            clean_qr_path = existing_short_url.qr_code_path.replace('\\', '/')
-            qr_code_url_from_db = url_for('static', filename=clean_qr_path)
-
+        # QR code tidak disimpan ke disk di Vercel, jadi tidak ada path langsung.
+        # Frontend perlu memanggil endpoint /api/qr/<short_code> untuk mendapatkan QR.
         return jsonify({
             'short_url': url_for('redirect_to_original', short_code=short_code, _external=True),
-            'qr_code_url': qr_code_url_from_db, # Gunakan URL yang sudah dibersihkan
+            'qr_code_url': None, # Tidak ada URL QR code langsung dari sini lagi
             'message': 'URL ini sudah pernah dipersingkat!'
         }), 200
 
@@ -230,7 +218,76 @@ def shorten_url_api():
     else:
         short_code = generate_short_code()
 
-    # Generate QR Code
+    # --- TIDAK ADA LAGI PENYIMPANAN QR CODE KE DISK DI SINI ---
+    # QR code akan dihasilkan on-demand melalui endpoint API baru.
+    
+    new_short_url = ShortUrl(
+        original_url=original_url,
+        short_code=short_code,
+        user_id=g.user.id if g.user else None,
+        qr_code_path=None # Tidak ada path QR code yang disimpan di DB lagi
+    )
+    db.session.add(new_short_url)
+    db.session.commit()
+
+    # Mengembalikan URL pendek dan instruksi untuk mendapatkan QR code
+    return jsonify({
+        'short_url': url_for('redirect_to_original', short_code=short_code, _external=True),
+        'qr_code_url': url_for('get_qr_code_api', short_code=short_code, _external=True), # Beri tahu frontend cara mendapatkan QR
+        'message': 'URL berhasil dipersingkat!'
+    }), 201
+
+# Rute untuk redireksi (saat short URL diakses)
+@app.route('/<short_code>')
+def redirect_to_original(short_code):
+    short_url_entry = ShortUrl.query.filter_by(short_code=short_code, is_active=True).first()
+    if short_url_entry:
+        # Catat klik
+        user_ip = request.remote_addr
+        country = 'Unknown' # Default jika GeoIP tidak digunakan atau gagal
+
+        # --- GEOIP Logic (Pastikan Anda menginstal geoip2 jika menggunakan ini) ---
+        # Jika Anda menggunakan geoip2, pastikan database GeoLite2-City.mmdb
+        # ada di lokasi yang dapat diakses (misalnya, di root folder proyek)
+        # dan Anda memiliki kode inisialisasi reader.
+        # Contoh:
+        # import geoip2.database
+        # GEOIP_DB_PATH = os.path.join(app.root_path, 'GeoLite2-City.mmdb')
+        # try:
+        #     reader = geoip2.database.Reader(GEOIP_DB_PATH)
+        # except Exception as e:
+        #     app.logger.error(f"Failed to load GeoIP database: {e}")
+        #     reader = None
+        #
+        # if reader:
+        #     try:
+        #         response = reader.city(user_ip)
+        #         country = response.country.name if response.country else 'Unknown'
+        #     except Exception as e:
+        #         app.logger.warning(f"Failed to get geoip data for {user_ip}: {e}")
+        # else:
+        #     app.logger.warning("GeoIP reader not initialized.")
+
+        new_click = Click(short_url_id=short_url_entry.id, ip_address=user_ip, country=country)
+        db.session.add(new_click)
+        db.session.commit()
+        
+        return redirect(short_url_entry.original_url)
+    else:
+        flash('Tautan tidak valid atau sudah tidak aktif.', 'error')
+        return redirect(url_for('index'))
+
+# --- API Endpoint Baru untuk Mendapatkan QR Code (Base64) ---
+@app.route('/api/qr/<short_code>', methods=['GET'])
+def get_qr_code_api(short_code):
+    """
+    Menghasilkan dan mengembalikan QR code untuk short_code tertentu dalam format Base64.
+    Digunakan oleh frontend untuk menampilkan QR code secara on-demand.
+    """
+    short_url_entry = ShortUrl.query.filter_by(short_code=short_code).first()
+    if not short_url_entry:
+        return jsonify({'error': 'Short URL tidak ditemukan'}), 404
+
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -242,66 +299,16 @@ def shorten_url_api():
     qr.make(fit=True)
 
     img = qr.make_image(fill_color="black", back_color="white")
-    
-    # Gunakan QR_CODES_FOLDER yang didefinisikan di awal
-    qr_code_filename = f'qr_{short_code}.png'
-    qr_code_path_on_disk = os.path.join(QR_CODES_FOLDER, qr_code_filename)
-    img.save(qr_code_path_on_disk)
 
-    # Path relatif untuk disimpan ke DB (ini bisa tetap menggunakan os.path.join jika DB memerlukannya)
-    # Karena kita sudah memastikan folder 'qrcodes' adalah bagian dari 'static',
-    # path relatif dari 'static' adalah 'qrcodes/qr_filename.png'
-    relative_qr_path_for_db = os.path.join('qrcodes', qr_code_filename)
+    # Simpan gambar ke buffer memori
+    buffered = io.BytesIO()
+    img.save(buffered, format="PNG")
+    img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
 
-    # Buat path yang ramah URL dengan forward slashes
-    url_friendly_qr_path = f'qrcodes/{qr_code_filename}' # <--- Ini yang perlu digunakan untuk URL!
-    
-    new_short_url = ShortUrl(
-        original_url=original_url,
-        short_code=short_code,
-        user_id=g.user.id if g.user else None,
-        qr_code_path=relative_qr_path_for_db # Simpan path relatif ke DB
-    )
-    db.session.add(new_short_url)
-    db.session.commit()
+    return jsonify({'qr_code_data': f"data:image/png;base64,{img_str}"}), 200
 
-    return jsonify({
-        'short_url': full_short_url,
-        'qr_code_url': url_for('static', filename=url_friendly_qr_path) # <--- GANTI KE url_friendly_qr_path INI!
-    }), 201
 
-# Rute untuk redireksi (saat short URL diakses)
-@app.route('/<short_code>')
-def redirect_to_original(short_code):
-    short_url_entry = ShortUrl.query.filter_by(short_code=short_code, is_active=True).first()
-    if short_url_entry:
-        # Catat klik
-        user_ip = request.remote_addr
-        country = 'Unknown'
-        
-        # --- GEOIP Logic ---
-        # Pastikan Anda sudah mengunduh database GeoLite2-City.mmdb
-        # dan menempatkannya di root folder project Anda (sejajar dengan app.py)
-        # Atau sesuaikan path GEOIP_DB_PATH di awal app.py
-        # from your code snippet, it's assumed you have geoip2.database.Reader imported
-        # and 'reader' is initialized globally for efficiency.
-        # If you are not using GeoIP, you can remove this try/except block.
-        try:
-            # Placeholder if you are not using GeoIP for now
-            pass
-        except Exception as e:
-            app.logger.warning(f"Failed to get geoip data for {user_ip}: {e}")
-
-        new_click = Click(short_url_id=short_url_entry.id, ip_address=user_ip, country=country)
-        db.session.add(new_click)
-        db.session.commit()
-        
-        return redirect(short_url_entry.original_url)
-    else:
-        flash('Tautan tidak valid atau sudah tidak aktif.', 'error')
-        return redirect(url_for('index'))
-
-# ... (Rute API untuk manajemen URL dan analitik lainnya) ...
+# --- Rute API untuk manajemen URL dan analitik lainnya ---
 
 @app.route('/api/urls', methods=['GET'])
 @login_required
@@ -311,24 +318,21 @@ def get_user_urls_api():
     for url in urls:
         total_clicks = Click.query.filter_by(short_url_id=url.id).count()
         
-        # PERBAIKAN: Pastikan QR code URL menggunakan forward slashes saat diambil dari DB
-        qr_code_url_for_frontend = None
-        if url.qr_code_path:
-            # Mengganti backslash dengan forward slash jika ada
-            clean_qr_path = url.qr_code_path.replace('\\', '/')
-            qr_code_url_for_frontend = url_for('static', filename=clean_qr_path)
+        # QR code tidak lagi disimpan di disk. Frontend akan memanggil endpoint /api/qr/<short_code>
+        # untuk mendapatkan QR code.
+        qr_code_url_for_frontend = url_for('get_qr_code_api', short_code=url.short_code, _external=True)
 
         urls_data.append({
             'id': url.id,
             'original_url': url.original_url,
             'short_code': url.short_code,
             'short_url': url_for('redirect_to_original', short_code=url.short_code, _external=True),
-            'qr_code_url': qr_code_url_for_frontend, # Gunakan URL yang sudah dibersihkan
+            'qr_code_url': qr_code_url_for_frontend, # Sekarang mengarah ke API endpoint baru
             'is_active': url.is_active,
             'created_at': url.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-            'clicks_count': total_clicks # Mengganti 'total_clicks' menjadi 'clicks_count' agar konsisten dengan JS
+            'clicks_count': total_clicks
         })
-    return jsonify({'urls': urls_data}), 200 # Mengembalikan sebagai objek dengan kunci 'urls'
+    return jsonify({'urls': urls_data}), 200
 
 @app.route('/api/urls/<int:url_id>', methods=['DELETE'])
 @login_required
@@ -337,23 +341,15 @@ def delete_url_api(url_id):
     if not short_url:
         return jsonify({'error': 'URL tidak ditemukan atau bukan milik Anda'}), 404
 
-    # Hapus juga file QR code dari disk jika ada
-    if short_url.qr_code_path:
-        full_qr_path_on_disk = os.path.join(app.root_path, 'static', short_url.qr_code_path)
-        if os.path.exists(full_qr_path_on_disk):
-            try:
-                os.remove(full_qr_path_on_disk)
-                app.logger.info(f"QR code file removed: {full_qr_path_on_disk}")
-            except Exception as e:
-                app.logger.error(f"Error removing QR code file {full_qr_path_on_disk}: {e}")
-
+    # --- TIDAK ADA LAGI PENGHAPUSAN FILE QR CODE DARI DISK ---
+    # Karena QR code tidak disimpan secara permanen di serverless.
 
     Click.query.filter_by(short_url_id=url_id).delete()
     db.session.delete(short_url)
     db.session.commit()
     return jsonify({'message': 'URL berhasil dihapus'}), 200
 
-@app.route('/api/urls/<int:url_id>/toggle-status', methods=['PUT']) # Mengubah POST menjadi PUT
+@app.route('/api/urls/<int:url_id>/toggle-status', methods=['PUT'])
 @login_required
 def toggle_url_active_api(url_id):
     short_url = ShortUrl.query.filter_by(id=url_id, user_id=g.user.id).first()
@@ -382,18 +378,17 @@ def get_url_analytics_api(url_id):
 
     daily_clicks = {}
     for click in clicks:
-        day_key = click.clicked_at.strftime('%Y-%m-%d') # Format tanggal
+        day_key = click.clicked_at.strftime('%Y-%m-%d')
         daily_clicks[day_key] = daily_clicks.get(day_key, 0) + 1
 
     return jsonify({
-        'short_code': short_url.short_code, # Tambahkan short_code untuk modal analitik
+        'short_code': short_url.short_code,
         'total_clicks': total_clicks,
         'country_distribution': country_data,
         'daily_clicks': daily_clicks
     }), 200
 
-# --- Menjalankan Aplikasi ---
-if __name__ == '__main__':
-    HEAD:api/app.py
-    app.run(debug=True, port=5000) # Pastikan Anda selalu menggunakan debug=True selama pengembangan
-e28c198779903d0ca537b91e9cfadba61492cef3:app.py
+# --- Menjalankan Aplikasi (Hanya untuk pengembangan lokal) ---
+# Blok ini tidak akan dieksekusi oleh Vercel.
+# if __name__ == '__main__':
+#     app.run(debug=True, port=5000)
