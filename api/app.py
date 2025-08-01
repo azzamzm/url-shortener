@@ -10,6 +10,7 @@ import jwt
 from datetime import datetime, timedelta, timezone
 import requests
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy.exc import IntegrityError # Import IntegrityError untuk penanganan error database
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -97,46 +98,26 @@ def register():
         return redirect(url_for('dashboard'))
 
     username = request.form.get('username')
-<<<<<<< HEAD
-    email = request.form.get('email')
-    password = request.form.get('password')
-    confirm_password = request.form.get('confirm_password')
-
-    # --- Validasi Input ---
-    if not username or not password or not email or not confirm_password:
-        flash('Semua kolom harus diisi.', 'error')
-        return redirect(url_for('auth'))
-
-    if password != confirm_password:
-        flash('Konfirmasi kata sandi tidak cocok.', 'error')
-        return redirect(url_for('auth'))
-
-=======
-    email = request.form.get('email') # <--- BARIS BARU: Ambil email dari form
+    email = request.form.get('email') # Ambil email dari form
     password = request.form.get('password')
     confirm_password = request.form.get('confirm_password') # Asumsikan Anda memiliki ini di form
 
     # --- Validasi Input ---
-    if not username or not password or not email or not confirm_password: # <--- Tambahkan 'email' dan 'confirm_password'
+    if not username or not password or not email or not confirm_password: # Tambahkan 'email' dan 'confirm_password'
         flash('Semua kolom harus diisi.', 'error') # Pesan lebih umum
         return redirect(url_for('auth')) # Redirect kembali ke halaman auth
 
-    if password != confirm_password: # <--- Validasi konfirmasi password
+    if password != confirm_password: # Validasi konfirmasi password
         flash('Konfirmasi kata sandi tidak cocok.', 'error')
         return redirect(url_for('auth'))
 
->>>>>>> d2180cc47bb19bdb87aa783e0185f71a97e27d69
     # --- Cek Pengguna/Email yang Sudah Ada ---
     existing_user = User.query.filter_by(username=username).first()
     if existing_user:
         flash('Nama pengguna sudah terdaftar. Silakan pilih nama lain.', 'error')
         return redirect(url_for('auth'))
 
-<<<<<<< HEAD
-    existing_email = User.query.filter_by(email=email).first()
-=======
-    existing_email = User.query.filter_by(email=email).first() # <--- BARIS BARU: Cek apakah email sudah terdaftar
->>>>>>> d2180cc47bb19bdb87aa783e0185f71a97e27d69
+    existing_email = User.query.filter_by(email=email).first() # Cek apakah email sudah terdaftar
     if existing_email:
         flash('Email ini sudah terdaftar. Silakan gunakan email lain atau masuk.', 'error')
         return redirect(url_for('auth'))
@@ -145,33 +126,19 @@ def register():
     hashed_password = generate_password_hash(password)
     new_user = User(
         username=username,
-<<<<<<< HEAD
-        email=email,
-=======
-        email=email, # <--- BARIS PENTING: Berikan nilai email ke model User
->>>>>>> d2180cc47bb19bdb87aa783e0185f71a97e27d69
+        email=email, # Berikan nilai email ke model User
         password_hash=hashed_password
     )
     db.session.add(new_user)
     
     try:
-<<<<<<< HEAD
-        db.session.commit()
-        flash('Registrasi berhasil! Silakan masuk.', 'success')
-        return redirect(url_for('auth'))
-    except Exception as e:
-        db.session.rollback()
-        flash(f'Terjadi kesalahan saat registrasi: {e}', 'error')
-        app.logger.error(f"Error during registration: {e}") # Log error untuk debugging
-=======
         db.session.commit() # Coba commit perubahan
         flash('Registrasi berhasil! Silakan masuk.', 'success')
         return redirect(url_for('auth'))
     except Exception as e:
         db.session.rollback() # Jika ada error database (misal: constraint violation lainnya), batalkan transaksi
         flash(f'Terjadi kesalahan saat registrasi: {e}', 'error') # Tampilkan pesan error
-        # Anda bisa log error 'e' di sini untuk debugging lebih lanjut
->>>>>>> d2180cc47bb19bdb87aa783e0185f71a97e27d69
+        app.logger.error(f"Error during registration: {e}") # Log error untuk debugging lebih lanjut
         return redirect(url_for('auth'))
 
 # Rute untuk proses login
@@ -316,22 +283,12 @@ def redirect_to_original(short_code):
         # Pastikan Anda sudah mengunduh database GeoLite2-City.mmdb
         # dan menempatkannya di root folder project Anda (sejajar dengan app.py)
         # Atau sesuaikan path GEOIP_DB_PATH di awal app.py
-        # from your code snippet, it seems you have geoip2.database.Reader already imported
-        # Inisialisasi reader GeoIP di luar fungsi jika memungkinkan untuk efisiensi
-        # Misalnya: reader = geoip2.database.Reader('GeoLite2-City.mmdb')
-        # Jika reader belum didefinisikan, ini akan menyebabkan error
-        # Untuk saat ini, saya akan mengasumsikan reader sudah diinisialisasi secara global
-        # atau Anda akan menanganinya. Jika tidak, Anda perlu mengimpor geoip2.database
-        # dan menginisialisasi reader di sini atau di awal file.
-        # Jika Anda tidak menggunakan GeoIP, Anda bisa menghapus blok try/except ini.
+        # from your code snippet, it's assumed you have geoip2.database.Reader imported
+        # and 'reader' is initialized globally for efficiency.
+        # If you are not using GeoIP, you can remove this try/except block.
         try:
-            # Perlu dipastikan 'reader' didefinisikan secara global atau diinisialisasi
-            # Jika Anda tidak menggunakan GeoIP, hapus bagian ini
-            # if reader: # Ini akan error jika reader belum didefinisikan
-            #     response = reader.city(user_ip)
-            #     if response.country.name:
-            #         country = response.country.name
-            pass # Placeholder jika Anda tidak menggunakan GeoIP untuk saat ini
+            # Placeholder if you are not using GeoIP for now
+            pass
         except Exception as e:
             app.logger.warning(f"Failed to get geoip data for {user_ip}: {e}")
 
@@ -437,8 +394,4 @@ def get_url_analytics_api(url_id):
 
 # --- Menjalankan Aplikasi ---
 if __name__ == '__main__':
-<<<<<<< HEAD
-    app.run(debug=True, port=5000)
-=======
     app.run(debug=True, port=5000) # Pastikan Anda selalu menggunakan debug=True selama pengembangan
->>>>>>> d2180cc47bb19bdb87aa783e0185f71a97e27d69
