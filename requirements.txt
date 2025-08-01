@@ -1,0 +1,11 @@
+Flask
+Flask-SQLAlchemy
+pyjwt
+Werkzeug
+itsdangerous
+Jinja2
+MarkupSafe
+click
+blinker
+qrcode
+requests
