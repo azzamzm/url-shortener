@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Flask
 Flask-SQLAlchemy
 pyjwt
@@ -9,3 +10,16 @@ click
 blinker
 qrcode
 requests
+=======
+Flask
+Flask-SQLAlchemy
+pyjwt
+Werkzeug
+itsdangerous
+Jinja2
+MarkupSafe
+click
+blinker
+qrcode
+requests
+>>>>>>> fb407be98b715f8d64f707e918796260c24db8be
